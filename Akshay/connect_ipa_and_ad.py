@@ -28,17 +28,18 @@ ipa_password = os.environ["ipa_password"]
 
 ipa_client = ClientMeta(ipa_server, verify_ssl=False)
 ipa_client.login(ipa_user, ipa_password)
-for group in groups:
-    group_stat = ipa_client.group_find(o_cn=group)
-    if group_stat['count'] == 1:
-        print("group already exists")
-    else:
-        print("group doesn't exist. Creating.....")
-        ipa_client.group_add(a_cn=group, o_description='This group is managed by AD')
-    for user in users:
-        user = user.replace('@rupeek.com', '')
-        try:
-            ipa_client.group_add_member(group, o_ipaexternalmember=None, o_all=True, o_raw=False, o_no_members=False, o_user=user, o_group=None, o_service=None)
-            print(f"User {user} added to group {group} successfully")
-        except python_freeipa.exceptions.DuplicateEntry as e:
-            print(f"User {user} already added to group {group}")
+
+# for group in groups:
+#     group_stat = ipa_client.group_find(o_cn=group)
+#     if group_stat['count'] == 1:
+#         print("group already exists")
+#     else:
+#         print("group doesn't exist. Creating.....")
+#         ipa_client.group_add(a_cn=group, o_description='This group is managed by AD')
+#     for user in users:
+#         user = user.replace('@rupeek.com', '')
+#         try:
+#             ipa_client.group_add_member(group, o_ipaexternalmember=None, o_all=True, o_raw=False, o_no_members=False, o_user=user, o_group=None, o_service=None)
+#             print(f"User {user} added to group {group} successfully")
+#         except python_freeipa.exceptions.DuplicateEntry as e:
+#             print(f"User {user} already added to group {group}")
