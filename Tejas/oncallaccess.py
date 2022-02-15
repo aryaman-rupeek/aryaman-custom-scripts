@@ -1,17 +1,36 @@
 import ldap,datetime,dateutil,json,pytz,os
 import requests as re
 
-ADMIN_GROUPS_LIST = os.environ.get("ADMIN_GROUPS_LIST") 
+#ADMIN_GROUPS_LIST = os.environ.get("ADMIN_GROUPS_LIST") 
+#ADMIN_GROUPS_LIST = ['aws_prod_admin', 'aws_shared_admin','aws_stg_admin']
+
+#ADMIN_GROUPS_AND_USER_EXCEPTIONS -> Format for Strings in the list: AdminGrp_ExceptedUsr
+ADMIN_GROUPS_AND_USER_EXCEPTIONS = os.environ.get("ADMIN_GROUPS_AND_USER_EXCEPTIONS")
+
 LDAP_SEARCH_BASE_DN =os.environ.get("LDAP_SEARCH_BASE_DN") 
 LDAP_HOST=os.environ.get("LDAP_HOST") 
 LDAP_BINDUSER=os.environ.get("LDAP_BINDUSER") 
 LDAP_BINDPASSWORD=os.environ.get("LDAP_BINDPASSWORD") 
 DEVOPS_SCHEDULE_ID=os.environ.get("DEVOPS_SCHEDULE_ID")
-USER_EXCEPTION_LIST=os.environ.get("USER_EXCEPTION_LIST")
+
+#USER_EXCEPTION_LIST=os.environ.get("USER_EXCEPTION_LIST")
+
 PD_TOKEN = os.environ.get("PD_TOKEN")
 
-ADMIN_GROUPS_LIST = [x.strip() for x in ADMIN_GROUPS_LIST.split(",")]
-USER_EXCEPTION_LIST = [x.strip() for x in USER_EXCEPTION_LIST.split(",")]
+# ADMIN_GROUPS_LIST = [x.strip() for x in ADMIN_GROUPS_LIST.split(",")]
+# USER_EXCEPTION_LIST = [x.strip() for x in USER_EXCEPTION_LIST.split(",")]
+
+ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST = dict()
+
+for token in ADMIN_GROUPS_AND_USER_EXCEPTIONS:
+    adminGrp = token.split("_")[0]
+    excpUsr = token.split("_")[1]
+
+    if adminGrp in ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST.keys():
+        ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGrp].append(excpUsr)
+    else:
+        ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGrp] = [excpUsr]
+
 
 headers={"accept": "application/vnd.pagerduty+json;version=2",
                     "authorization": f"Token token={PD_TOKEN}",
@@ -89,26 +108,26 @@ for userid,uservalues in devopsUsersDict.items():
     email = uservalues['email']
     sAMAccountName = uservalues['email'].split('@')[0]
     
-    if email not in USER_EXCEPTION_LIST:
-        ldapDetails = getLDAPUserDetails(connect,sAMAccountName)
-        userDN = ldapDetails[0][0]
-        userGroups = ldapDetails[0][1]['memberOf']
+    # if email not in USER_EXCEPTION_LIST:
+    #     ldapDetails = getLDAPUserDetails(connect,sAMAccountName)
+    #     userDN = ldapDetails[0][0]
+    #     userGroups = ldapDetails[0][1]['memberOf']
         
-        if userid == onCallUser['id']:
+    #     if userid == onCallUser['id']:
      
-            for adminGroup in ADMIN_GROUPS_LIST:
-                if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]):
-                    print({"rpk":{"log":{name:{adminGroup: "1","on-call": "1","action":"NA"}}}})
-                else:
-                    print({"rpk":{"log":{name:{adminGroup: "0","on-call": "1","action": f"Add user to {adminGroup}"}}}})
-                    ldapAdd(connect,userDN,adminGroup)
-        else:
-            for adminGroup in ADMIN_GROUPS_LIST:
-                if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]):
-                    print({"rpk":{"log":{name:{adminGroup: "1","on-call": "0", "action": f"Remove user from {adminGroup}"}}}})
-                    ldapRemove(connect,userDN,adminGroup)
-                else:
-                    print({"rpk":{"log":{name:{adminGroup: "0","on-call": "0","action":"NA"}}}})
+    #         for adminGroup in ADMIN_GROUPS_LIST:
+    #             if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]):
+    #                 print({"rpk":{"log":{name:{adminGroup: "1","on-call": "1","action":"NA"}}}})
+    #             else:
+    #                 print({"rpk":{"log":{name:{adminGroup: "0","on-call": "1","action": f"Add user to {adminGroup}"}}}})
+    #                 ldapAdd(connect,userDN,adminGroup)
+    #     else:
+    #         for adminGroup in ADMIN_GROUPS_LIST:
+    #             if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]):
+    #                 print({"rpk":{"log":{name:{adminGroup: "1","on-call": "0", "action": f"Remove user from {adminGroup}"}}}})
+    #                 ldapRemove(connect,userDN,adminGroup)
+    #             else:
+    #                 print({"rpk":{"log":{name:{adminGroup: "0","on-call": "0","action":"NA"}}}})
             
 
             
