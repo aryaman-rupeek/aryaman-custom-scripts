@@ -1,13 +1,3 @@
-
-   
-'''
- # @ Author: killari.kumar
- # @ Create Time: 2021-02-02 12:51:50
- # @ Description: Add users to IPA groups
- '''
-
-######Add existing IPA users to IPA groups######
-
 import python_freeipa
 from python_freeipa import ClientMeta
 import os
