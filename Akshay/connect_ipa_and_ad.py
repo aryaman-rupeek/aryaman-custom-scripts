@@ -12,9 +12,10 @@ import python_freeipa
 from python_freeipa import ClientMeta
 import os
 import urllib3
+import json
 # import sys
 import ldap3
-from ldap3 import Server, ServerPool, Connection, ALL, MODIFY_REPLACE, ALL_ATTRIBUTES, SUBTREE, FIRST
+from ldap3 import Server, Connection, ALL, MODIFY_REPLACE, ALL_ATTRIBUTES, BASE, LEVEL, SUBTREE, FIRST
 from ldap3.core.exceptions import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -23,7 +24,7 @@ groups = os.environ["groups"].split(',')
 # groups = sys.argv[1].split(',')
 # users = sys.argv[2].split(',')
 
-def connect_to_ipa():
+def get_list_of_ipa_users():
 
     os.environ["PYTHONHTTPSVERIFY"] = "0"
 
@@ -34,7 +35,8 @@ def connect_to_ipa():
     ipa_client = ClientMeta(ipa_server, verify_ssl=False)
     ipa_client.login(ipa_user, ipa_password)
 
-def connect_to_ad():
+
+def get_list_of_ad_users():
 
     os.environ["PYTHONHTTPSVERIFY"] = "0"
 
@@ -47,10 +49,15 @@ def connect_to_ad():
     if not ad_connection.bind():
         print('error in bind', ad_connection.result)
 
-def get_list_of_ad_users():
+    ad_connection.search(
+        search_base='CN=users,CN=accounts,DC=internal,DC=rupeek,DC=co',
+        search_filter='(objectClass=uid)',
+        search_scope=BASE,
+        attributes=ALL_ATTRIBUTES
+    )
 
-    connect_to_ad()
-
+    for entry in ad_connection.entries:
+        print(entry.member.values)
 
 
 # for group in groups:
