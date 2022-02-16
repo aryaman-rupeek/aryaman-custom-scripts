@@ -20,11 +20,15 @@ PD_TOKEN = os.environ.get("PD_TOKEN")
 # ADMIN_GROUPS_LIST = [x.strip() for x in ADMIN_GROUPS_LIST.split(",")]
 # USER_EXCEPTION_LIST = [x.strip() for x in USER_EXCEPTION_LIST.split(",")]
 
+ADMIN_GROUPS_LIST = []
+
 ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST = dict()
 
 for token in ADMIN_GROUPS_AND_USER_EXCEPTIONS:
     adminGrp = token.split("_")[0]
     excpUsr = token.split("_")[1]
+
+    ADMIN_GROUPS_LIST.append(adminGrp)
 
     if adminGrp in ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST.keys():
         ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGrp].append(excpUsr)
