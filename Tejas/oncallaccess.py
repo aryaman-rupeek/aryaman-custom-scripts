@@ -28,9 +28,8 @@ for token in ADMIN_GROUPS_AND_USER_EXCEPTIONS:
     adminGrp = token.split("_")[0]
     excpUsr = token.split("_")[1]
 
-    ADMIN_GROUPS_LIST.append(adminGrp)
-
     if adminGrp in ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST.keys():
+        ADMIN_GROUPS_LIST.append(adminGrp)
         ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGrp].append(excpUsr)
     else:
         ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGrp] = [excpUsr]
@@ -133,9 +132,29 @@ for userid,uservalues in devopsUsersDict.items():
     #             else:
     #                 print({"rpk":{"log":{name:{adminGroup: "0","on-call": "0","action":"NA"}}}})
             
+    for adminGroup in ADMIN_GROUPS_LIST:
 
+        if email not in ADMIN_GROUPS_AND_USER_EXCEPTIONS_LIST[adminGroup]:
+
+            ldapDetails = getLDAPUserDetails(connect,sAMAccountName)
+            userDN = ldapDetails[0][0]
+            userGroups = ldapDetails[0][1]['memberOf']
             
-                
-        
+            if userid == onCallUser['id']:
+
+                if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]): 
+                    print({"rpk":{"log":{name:{adminGroup: "1","on-call": "1","action":"NA"}}}})
+                else:
+                    print({"rpk":{"log":{name:{adminGroup: "0","on-call": "1","action": f"Add user to {adminGroup}"}}}})   
+                    ldapAdd(connect,userDN,adminGroup)
+
+            else:
+
+                if adminGroup in ','.join([x.decode('utf-8') for x in userGroups]): 
+                    print({"rpk":{"log":{name:{adminGroup: "1","on-call": "0", "action": f"Remove user from {adminGroup}"}}}})
+                    ldapRemove(connect,userDN,adminGroup)
+                else:
+                    print({"rpk":{"log":{name:{adminGroup: "0","on-call": "0","action":"NA"}}}})
+            
         
     
