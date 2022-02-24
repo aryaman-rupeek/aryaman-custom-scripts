@@ -25,12 +25,14 @@ def get_list_of_ipa_users():
     ipa_client = ClientMeta(ipa_server, verify_ssl=False)
     ipa_client.login(ipa_user, ipa_password)
 
+    #os.system("ipa user-find --all | grep -E "User Login|First|Last|UID|Email" > IPA_RAW.txt")
+
 
 def get_list_of_ad_users():
 
     os.environ["PYTHONHTTPSVERIFY"] = "0"
 
-    ad_server = ldap3.Server('ad.rupeek.net',use_ssl=False)
+    ad_server = ldap3.Server('10.123.16.99',port=389,use_ssl=False)
     ad_user = os.environ["ad_user"]
     ad_password = os.environ["ad_password"]
 
@@ -40,7 +42,7 @@ def get_list_of_ad_users():
         print('error in bind', ad_connection.result)
 
     ad_connection.search(
-        search_base='CN=users,CN=accounts,DC=internal,DC=rupeek,DC=co',
+        search_base='OU=Tech_Groups,OU=System_Groups,OU=Groups,OU=Rupeek_OU,DC=ad,DC=rupeek,DC=net',
         search_filter='(objectClass=uid)',
         search_scope=BASE,
         attributes=ALL_ATTRIBUTES
